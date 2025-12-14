@@ -10,7 +10,7 @@ kubernetes = "~=31.0.0"
 valkey = "~=6.0.2"
 structlog = "~=24.4.0"
 pydantic = "~=2.10.0"
-pydantic-settings = "~=2.6.0"
+pydantic-settings = "~=2.9.1"
 
 [dev-packages]
 
