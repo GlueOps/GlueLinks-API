@@ -12,8 +12,10 @@ RUN pipenv install --system --deploy
 # Copy application code
 COPY app/ ./app/
 
-# Create non-root user
-RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app
+# Create non-root user and .kube directory for kubeconfig mounting
+RUN useradd -m -u 1000 appuser && \
+    mkdir -p /home/appuser/.kube && \
+    chown -R appuser:appuser /app /home/appuser/.kube
 USER appuser
 
 # Expose port

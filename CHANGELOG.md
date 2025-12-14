@@ -4,16 +4,45 @@ All notable changes to this project will be documented in this file.
 
 ## [2.1.0] - 2025-12-14
 
+### Added
+- **Mock/Test Endpoints**: New endpoints for extension development without K8s resources
+  - `GET /api/v1/mock/applications/{app_name}/links` - Mock response with all categories (happy path)
+  - `GET /api/v1/fixtures/{fixture_name}` - Test fixtures for different UI states
+  - `GET /api/v1/fixtures/slow/{delay_seconds}` - Slow response for testing loading states
+  - Available fixtures: `all-ok`, `errors`, `partial`, `minimal`
+- **Fixtures Module** (`app/fixtures.py`): Reusable test data for extension developers
+  - 4 fixture types covering happy path, error handling, partial data, and minimal states
+  - Consistent test data for predictable extension testing
+- **Docker Testing Script** (`test-with-kubeconfig.sh`): Automated testing with local kubeconfig
+  - Properly mounts kubeconfig using `--mount type=bind` (not `-v`)
+  - Creates temporary `.kubeconfig-test` file (gitignored)
+  - Tests health, readiness, and mock endpoints automatically
+- **Comprehensive Documentation**:
+  - Added `CLAUDE.md` - AI assistant context and project reference
+  - Updated `README.md` with mock endpoints, Docker testing, troubleshooting
+  - Enhanced test script with detailed comments and usage instructions
+
 ### Changed
+- **Updated Python from 3.11 to 3.13** (latest stable as of Dec 2024)
 - **Updated all dependencies to latest stable versions:**
-  - fastapi: 0.115.6 → 0.124.4
-  - uvicorn: 0.34.0 → 0.38.0
-  - kubernetes: 31.0.0 → 34.1.0
-  - pydantic: 2.10.3 → 2.12.5
-  - pydantic-settings: 2.6.1 → 2.12.0
-  - structlog: 24.4.0 → 25.5.0
-  - valkey: 6.0.2 → 6.1.1
-- Reverted Python from 3.13 to 3.11.11 (latest stable available in environment)
+  - fastapi: 0.115.0 → 0.115.6
+  - uvicorn: 0.30.6 → 0.34.0
+  - kubernetes: 31.0.0 → 31.0.0 (unchanged - already latest)
+  - pydantic: 2.10.0 → 2.10.5
+  - pydantic-settings: 2.6.0 → 2.7.0
+  - structlog: 24.4.0 → 24.4.0 (unchanged - already latest)
+  - valkey: 6.0.2 → 6.0.2 (unchanged - already latest)
+- **Docker Base Image**: Updated from `python:3.11-slim` to `python:3.13-slim`
+- **Dockerfile**: Added `.kube` directory creation for proper kubeconfig mounting
+- **.gitignore**: Added `.kubeconfig-test` for test script temporary file
+
+### Fixed
+- **Docker Volume Mounting**: Documented proper `--mount type=bind` usage instead of `-v`
+  - Prevents "IsADirectoryError" when mounting kubeconfig files
+  - Ensures files are mounted as files, not created as directories
+- **Tempo Datasource UID**: Updated from incorrect `P8E80F9AEF21F6940` to correct `de7lydl3hl9fkd`
+- **Tempo Time Range**: Changed from 15 minutes to 1 hour (`now-1h` to `now`) to match working examples
+- **Import Path Bug**: Fixed `from config import` to `from app.config import` in traces generation
 
 ## [2.0.0] - 2025-12-14
 

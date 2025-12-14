@@ -29,6 +29,10 @@ wheels/
 # Environment
 .env
 .env.local
+.kubeconfig-test
+
+# Session notes (for reference, not part of repo)
+SESSION_SUMMARY.md
 
 # IDE
 .vscode/

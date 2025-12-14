@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  gluelinks-test:
+    image: ghcr.io/glueops/gluelinks-api:latest
+    ports:
+      - "8001:8000"
+    volumes:
+      - ${HOME}/.kube/config:/home/appuser/.kube/config:ro
+      - ./.env.local:/app/.env.local:ro
+    environment:
+      - KUBECONFIG=/home/appuser/.kube/config
+    container_name: gluelinks-kubetest
