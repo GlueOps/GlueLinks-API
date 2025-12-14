@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "117190406d708cbbfb6c9400bac363c1c2e4f51413856e209a71aedd7fac059c"
+            "sha256": "3a66a4e5158cc1ea6f48554c02244b6900fbda1b35d26488ee3f584bbfdeb03d"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -16,6 +16,14 @@
         ]
     },
     "default": {
+        "annotated-doc": {
+            "hashes": [
+                "sha256:571ac1dc6991c450b25a9c2d84a3705e2ae7a53467b5d111c24fa8baabbed320",
+                "sha256:fbcda96e87e9c92ad167c2e53839e57503ecfda18804ea28102353485033faa4"
+            ],
+            "markers": "python_version >= '3.8'",
+            "version": "==0.0.4"
+        },
         "annotated-types": {
             "hashes": [
                 "sha256:1f02e8b43a8fbbc3f3e0d4f0f4bfc8131bcb4eebe8849b8e5c773f3a1c582a53",
@@ -192,12 +200,12 @@
         },
         "fastapi": {
             "hashes": [
-                "sha256:6c0c8bf9420bd58f565e585036d971872472b4f7d3f6c73b698e10cffdefb3ca",
-                "sha256:b1de15cdc1c499a4da47914db35d0e4ef8f1ce62b624e94e0e5824421df99739"
+                "sha256:0055bc24fe53e56a40e9e0ad1ae2baa81622c406e548e501e717634e2dfbc40b",
+                "sha256:0c78fc87587fcd910ca1bbf5bc8ba37b80e119b388a7206b39f0ecc95ebf53e9"
             ],
             "index": "pypi",
             "markers": "python_version >= '3.8'",
-            "version": "==0.115.14"
+            "version": "==0.121.3"
         },
         "google-auth": {
             "hashes": [
@@ -558,11 +566,11 @@
         },
         "starlette": {
             "hashes": [
-                "sha256:595633ce89f8ffa71a015caed34a5b2dc1c0cdb3f0f1fbd1e69339cf2abeec35",
-                "sha256:7f7361f34eed179294600af672f565727419830b54b7b084efe44bb82d2fccd5"
+                "sha256:9e5391843ec9b6e472eed1365a78c8098cfceb7a74bfd4d6b1c0c0095efb3bca",
+                "sha256:a2a17b22203254bcbc2e1f926d2d55f3f9497f769416b3190768befe598fa3ca"
             ],
-            "markers": "python_version >= '3.9'",
-            "version": "==0.46.2"
+            "markers": "python_version >= '3.10'",
+            "version": "==0.50.0"
         },
         "structlog": {
             "hashes": [
