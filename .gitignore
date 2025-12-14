@@ -24,7 +24,7 @@ wheels/
 *.egg
 
 # Pipenv
-Pipfile.lock
+#Pipfile.lock
 
 # Environment
 .env
