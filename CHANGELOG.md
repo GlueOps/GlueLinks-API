@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.1.0] - 2025-12-14
+
+### Changed
+- **Updated all dependencies to latest stable versions:**
+  - fastapi: 0.115.6 → 0.124.4
+  - uvicorn: 0.34.0 → 0.38.0
+  - kubernetes: 31.0.0 → 34.1.0
+  - pydantic: 2.10.3 → 2.12.5
+  - pydantic-settings: 2.6.1 → 2.12.0
+  - structlog: 24.4.0 → 25.5.0
+  - valkey: 6.0.2 → 6.1.1
+- Reverted Python from 3.13 to 3.11.11 (latest stable available in environment)
+
 ## [2.0.0] - 2025-12-14
 
 ### Added
