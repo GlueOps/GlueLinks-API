@@ -12,6 +12,7 @@ from app.models import (
     ResponseMetadata,
 )
 from app.k8s_client import K8sClient
+from app.quick_links import generate_quick_links_category
 
 logger = structlog.get_logger()
 
@@ -19,11 +20,13 @@ logger = structlog.get_logger()
 class LinksGenerator:
     """Generates links for ArgoCD applications."""
     
-    def __init__(self, k8s_client: K8sClient, grafana_base_url: str, vault_base_url: str):
+    def __init__(self, k8s_client: K8sClient, grafana_base_url: str, vault_base_url: str, captain_domain: str, max_rows: int):
         """Initialize links generator."""
         self.k8s_client = k8s_client
         self.grafana_base_url = grafana_base_url.rstrip("/")
         self.vault_base_url = vault_base_url.rstrip("/")
+        self.captain_domain = captain_domain
+        self.max_rows = max_rows
     
     async def generate_links(self, app_name: str, namespace: str) -> LinksResponse:
         """Generate all links for an application."""
@@ -44,8 +47,11 @@ class LinksGenerator:
         external_secrets = self.k8s_client.get_external_secrets(app_name, namespace)
         
         # Build metadata
+        now = datetime.now(timezone.utc)
         metadata = ResponseMetadata(
-            generated_at=datetime.now(timezone.utc),
+            generated_at=now,
+            last_updated=now,
+            max_rows=self.max_rows,
             version="v1",
             resources=ResourceMetadata(
                 argocd_app=argocd_app is not None,
@@ -55,8 +61,9 @@ class LinksGenerator:
             ),
         )
         
-        # Generate categories
+        # Generate categories with Quick Links first
         categories = [
+            generate_quick_links_category(self.captain_domain),
             self._generate_apm_category(service_name),
             self._generate_namespace_category(namespace),
             self._generate_pod_category(first_pod, namespace),
@@ -72,7 +79,6 @@ class LinksGenerator:
             app_name=app_name,
             namespace=namespace,
             service_name=service_name,
-            last_updated=datetime.now(timezone.utc),
             categories=categories,
             metadata=metadata,
         )

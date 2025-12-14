@@ -17,11 +17,20 @@ class Settings(BaseSettings):
     # Valkey connection (required)
     valkey_url: str = Field(..., description="Valkey connection URL")
     
+    # Captain domain for Quick Links
+    captain_domain: str = Field(
+        default="nonprod.antoniostacos.onglueops.com",
+        description="Captain domain for Quick Links URLs"
+    )
+    
     # Grafana datasource UIDs (optional, but recommended for working Tempo links)
     tempo_datasource_uid: str = Field(default="", description="Tempo datasource UID in Grafana")
     
     # Cache configuration
     cache_ttl_seconds: int = Field(default=30, description="Cache TTL in seconds")
+    
+    # UI configuration
+    max_rows: int = Field(default=4, description="Maximum number of rows to display per category")
     
     # Logging
     log_level: str = Field(default="INFO", description="Log level")

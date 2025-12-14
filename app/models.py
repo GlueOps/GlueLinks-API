@@ -31,6 +31,8 @@ class ResourceMetadata(BaseModel):
 class ResponseMetadata(BaseModel):
     """Response metadata."""
     generated_at: datetime = Field(..., description="When this response was generated")
+    last_updated: datetime = Field(..., description="When this data was last updated (UTC)")
+    max_rows: int = Field(..., description="Maximum number of rows to display per category")
     version: str = Field(default="v1", description="API version")
     resources: ResourceMetadata = Field(..., description="Resource discovery metadata")
 
@@ -40,7 +42,6 @@ class LinksResponse(BaseModel):
     app_name: str = Field(..., description="ArgoCD application name")
     namespace: str = Field(..., description="Kubernetes namespace")
     service_name: str = Field(..., description="Derived service name from application name")
-    last_updated: datetime = Field(..., description="When this data was last updated (UTC)")
     categories: List[CategoryModel] = Field(..., description="List of link categories")
     metadata: ResponseMetadata = Field(..., description="Response metadata")
 

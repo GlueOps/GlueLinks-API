@@ -35,6 +35,8 @@ async def lifespan(app: FastAPI):
         k8s_client=app.state.k8s_client,
         grafana_base_url=settings.grafana_base_url,
         vault_base_url=settings.vault_base_url,
+        captain_domain=settings.captain_domain,
+        max_rows=settings.max_rows,
     )
     
     logger.info("app_started")

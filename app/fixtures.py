@@ -2,8 +2,15 @@
 Mock fixtures for testing the ArgoCD extension UI.
 Provides sample responses with various states for development.
 """
+import os
 from datetime import datetime
 from typing import Dict, Any
+
+from app.quick_links import get_quick_links_dict
+
+# Default captain domain from environment or fallback
+DEFAULT_CAPTAIN_DOMAIN = os.environ.get("CAPTAIN_DOMAIN", "nonprod.antoniostacos.onglueops.com")
+DEFAULT_MAX_ROWS = int(os.environ.get("MAX_ROWS", "4"))
 
 
 def get_mock_all_ok(app_name: str = "test-app-prod", namespace: str = "nonprod") -> Dict[str, Any]:
@@ -11,12 +18,13 @@ def get_mock_all_ok(app_name: str = "test-app-prod", namespace: str = "nonprod")
     Mock response with all categories populated and working.
     Use this to test the extension's happy path rendering.
     """
+    now = datetime.utcnow().isoformat() + "Z"
     return {
         "app_name": app_name,
         "namespace": namespace,
         "service_name": app_name,
-        "last_updated": datetime.utcnow().isoformat() + "Z",
         "categories": [
+            get_quick_links_dict(DEFAULT_CAPTAIN_DOMAIN),
             {
                 "id": "apm",
                 "label": "APM Overview",
@@ -118,7 +126,9 @@ def get_mock_all_ok(app_name: str = "test-app-prod", namespace: str = "nonprod")
             }
         ],
         "metadata": {
-            "generated_at": datetime.utcnow().isoformat() + "Z",
+            "generated_at": now,
+            "last_updated": now,
+            "max_rows": DEFAULT_MAX_ROWS,
             "version": "v1",
             "resources": {
                 "argocd_app": True,
@@ -135,12 +145,13 @@ def get_mock_error_states(app_name: str = "broken-app-prod", namespace: str = "n
     Mock response with various error and empty states.
     Use this to test extension error handling and empty state rendering.
     """
+    now = datetime.utcnow().isoformat() + "Z"
     return {
         "app_name": app_name,
         "namespace": namespace,
         "service_name": app_name,
-        "last_updated": datetime.utcnow().isoformat() + "Z",
         "categories": [
+            get_quick_links_dict(DEFAULT_CAPTAIN_DOMAIN),
             {
                 "id": "apm",
                 "label": "APM Overview",
@@ -209,7 +220,9 @@ def get_mock_error_states(app_name: str = "broken-app-prod", namespace: str = "n
             }
         ],
         "metadata": {
-            "generated_at": datetime.utcnow().isoformat() + "Z",
+            "generated_at": now,
+            "last_updated": now,
+            "max_rows": DEFAULT_MAX_ROWS,
             "version": "v1",
             "resources": {
                 "argocd_app": True,
@@ -226,12 +239,13 @@ def get_mock_partial_data(app_name: str = "partial-app-prod", namespace: str = "
     Mock response with some categories working and others empty/error.
     Use this to test mixed state rendering.
     """
+    now = datetime.utcnow().isoformat() + "Z"
     return {
         "app_name": app_name,
         "namespace": namespace,
         "service_name": app_name,
-        "last_updated": datetime.utcnow().isoformat() + "Z",
         "categories": [
+            get_quick_links_dict(DEFAULT_CAPTAIN_DOMAIN),
             {
                 "id": "apm",
                 "label": "APM Overview",
@@ -320,7 +334,9 @@ def get_mock_partial_data(app_name: str = "partial-app-prod", namespace: str = "
             }
         ],
         "metadata": {
-            "generated_at": datetime.utcnow().isoformat() + "Z",
+            "generated_at": now,
+            "last_updated": now,
+            "max_rows": DEFAULT_MAX_ROWS,
             "version": "v1",
             "resources": {
                 "argocd_app": True,
@@ -337,12 +353,13 @@ def get_mock_minimal(app_name: str = "minimal-app", namespace: str = "default") 
     Mock response with minimal data - only namespace and IaaC.
     Use this to test rendering when most categories are empty.
     """
+    now = datetime.utcnow().isoformat() + "Z"
     return {
         "app_name": app_name,
         "namespace": namespace,
         "service_name": app_name,
-        "last_updated": datetime.utcnow().isoformat() + "Z",
         "categories": [
+            get_quick_links_dict(DEFAULT_CAPTAIN_DOMAIN),
             {
                 "id": "apm",
                 "label": "APM Overview",
@@ -411,7 +428,9 @@ def get_mock_minimal(app_name: str = "minimal-app", namespace: str = "default") 
             }
         ],
         "metadata": {
-            "generated_at": datetime.utcnow().isoformat() + "Z",
+            "generated_at": now,
+            "last_updated": now,
+            "max_rows": DEFAULT_MAX_ROWS,
             "version": "v1",
             "resources": {
                 "argocd_app": True,
