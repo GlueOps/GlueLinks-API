@@ -4,13 +4,13 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-fastapi = "~=0.115.6"
-uvicorn = {extras = ["standard"], version = "~=0.34.0"}
-kubernetes = "~=32.0.0"
-valkey = "~=6.0.2"
-structlog = "~=24.4.0"
-pydantic = "~=2.10.5"
-pydantic-settings = "~=2.7.0"
+fastapi = "*"
+uvicorn = {extras = ["standard"], version = "*"}
+kubernetes = "*"
+valkey = "*"
+structlog = "*"
+pydantic = "*"
+pydantic-settings = "*"
 
 [dev-packages]
 
