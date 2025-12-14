@@ -1,0 +1,339 @@
+"""Links generator for ArgoCD applications."""
+from datetime import datetime, timezone
+from typing import List
+from urllib.parse import quote
+import structlog
+
+from app.models import (
+    LinksResponse,
+    CategoryModel,
+    LinkModel,
+    ResourceMetadata,
+    ResponseMetadata,
+)
+from app.k8s_client import K8sClient
+
+logger = structlog.get_logger()
+
+
+class LinksGenerator:
+    """Generates links for ArgoCD applications."""
+    
+    def __init__(self, k8s_client: K8sClient, grafana_base_url: str, vault_base_url: str):
+        """Initialize links generator."""
+        self.k8s_client = k8s_client
+        self.grafana_base_url = grafana_base_url.rstrip("/")
+        self.vault_base_url = vault_base_url.rstrip("/")
+    
+    async def generate_links(self, app_name: str, namespace: str) -> LinksResponse:
+        """Generate all links for an application."""
+        log = logger.bind(app_name=app_name, namespace=namespace)
+        log.info("generating_links")
+        
+        # Use full app_name as service_name for OpenTelemetry queries
+        service_name = app_name
+        
+        # Fetch K8s resources
+        argocd_app = self.k8s_client.get_argocd_application(app_name, namespace)
+        deployment = self.k8s_client.get_deployment(app_name, namespace)
+        
+        first_pod = None
+        if deployment:
+            first_pod = self.k8s_client.get_first_pod(deployment.metadata.name, namespace)
+        
+        external_secrets = self.k8s_client.get_external_secrets(app_name, namespace)
+        
+        # Build metadata
+        metadata = ResponseMetadata(
+            generated_at=datetime.now(timezone.utc),
+            version="v1",
+            resources=ResourceMetadata(
+                argocd_app=argocd_app is not None,
+                deployment=deployment is not None,
+                pods_found=1 if first_pod else 0,
+                external_secrets_found=len(external_secrets),
+            ),
+        )
+        
+        # Generate categories
+        categories = [
+            self._generate_apm_category(service_name),
+            self._generate_namespace_category(namespace),
+            self._generate_pod_category(first_pod, namespace),
+            self._generate_logs_category(service_name),
+            self._generate_traces_category(service_name),
+            self._generate_vault_category(external_secrets),
+            self._generate_iaac_category(argocd_app),
+        ]
+        
+        log.info("links_generated", service_name=service_name, categories_count=len(categories))
+        
+        return LinksResponse(
+            app_name=app_name,
+            namespace=namespace,
+            service_name=service_name,
+            last_updated=datetime.now(timezone.utc),
+            categories=categories,
+            metadata=metadata,
+        )
+    
+    def _generate_apm_category(self, service_name: str) -> CategoryModel:
+        """Generate APM overview links."""
+        url = (
+            f"{self.grafana_base_url}/d/opentelemetry-apm/apm-overview"
+            f"?orgId=1&refresh=30s&from=now-1h&to=now&var-app={quote(service_name)}&var-route=All"
+        )
+        
+        return CategoryModel(
+            id="apm",
+            label="APM Overview",
+            icon="📊",
+            status="ok",
+            links=[
+                LinkModel(
+                    label="Application Performance Monitoring",
+                    url=url,
+                )
+            ],
+        )
+    
+    def _generate_namespace_category(self, namespace: str) -> CategoryModel:
+        """Generate namespace overview links."""
+        url = (
+            f"{self.grafana_base_url}/d/ee58kcteeir5sf/kubernetes-overview"
+            f"?orgId=1&var-namespace={quote(namespace)}"
+        )
+        
+        return CategoryModel(
+            id="namespace",
+            label="Namespace Overview",
+            icon="📦",
+            status="ok",
+            links=[
+                LinkModel(
+                    label="Kubernetes Overview",
+                    url=url,
+                )
+            ],
+        )
+    
+    def _generate_pod_category(self, pod, namespace: str) -> CategoryModel:
+        """Generate pod overview links."""
+        if not pod:
+            return CategoryModel(
+                id="pod",
+                label="Pod Overview",
+                icon="🔲",
+                status="empty",
+                message="No pods currently running",
+                links=[],
+            )
+        
+        pod_name = pod.metadata.name
+        url = (
+            f"{self.grafana_base_url}/d/ce60j8f8umhhcc/kubernetes-pod-overview"
+            f"?orgId=1&refresh=10s&from=now-1h&to=now"
+            f"&var-datasource=default&var-cluster=&var-namespace={quote(namespace)}"
+            f"&var-pod={quote(pod_name)}"
+        )
+        
+        return CategoryModel(
+            id="pod",
+            label="Pod Overview",
+            icon="🔲",
+            status="ok",
+            links=[
+                LinkModel(
+                    label=pod_name,
+                    url=url,
+                )
+            ],
+        )
+    
+    def _generate_logs_category(self, service_name: str) -> CategoryModel:
+        """Generate logs links."""
+        # Loki logs URL using the Loki explore app
+        url = (
+            f"{self.grafana_base_url}/a/grafana-lokiexplore-app/explore/service/{quote(service_name)}/logs"
+            f"?patterns=%5B%5D&from=now-15m&to=now"
+            f"&var-filters=service_name%7C%3D%7C{quote(service_name)}"
+            f"&var-fields=&var-levels=&var-metadata=&var-patterns=&var-lineFilterV2=&var-lineFilters=&timezone=browser"
+            f"&var-all-fields=&urlColumns=%5B%5D&visualizationType=%22logs%22&displayedFields=%5B%5D"
+            f"&sortOrder=%22Descending%22&wrapLogMessage=false"
+        )
+        
+        return CategoryModel(
+            id="logs",
+            label="Logs",
+            icon="📋",
+            status="ok",
+            links=[
+                LinkModel(
+                    label="Application Logs (Loki)",
+                    url=url,
+                )
+            ],
+        )
+    
+    def _generate_traces_category(self, service_name: str) -> CategoryModel:
+        """Generate traces links."""
+        import json
+        from app.config import load_settings
+        
+        settings = load_settings()
+        tempo_uid = settings.tempo_datasource_uid
+        
+        # Build the panes structure for Tempo explore matching Grafana's format
+        panes_data = {
+            "trc": {  # Random pane identifier
+                "queries": [{
+                    "refId": "A",
+                    "queryType": "traceqlSearch",
+                    "limit": 20,
+                    "tableType": "traces",
+                    "filters": [{
+                        "id": "service-name",
+                        "tag": "service.name",
+                        "operator": "=",
+                        "scope": "resource",
+                        "value": [service_name],
+                        "valueType": "string"
+                    }]
+                }],
+                "range": {
+                    "from": "now-1h",
+                    "to": "now"
+                }
+            }
+        }
+        
+        # Add datasource UID if configured
+        if tempo_uid:
+            panes_data["trc"]["datasource"] = tempo_uid
+            panes_data["trc"]["queries"][0]["datasource"] = {
+                "type": "tempo",
+                "uid": tempo_uid
+            }
+        
+        panes_encoded = quote(json.dumps(panes_data))
+        
+        url = (
+            f"{self.grafana_base_url}/explore"
+            f"?schemaVersion=1&panes={panes_encoded}&orgId=1"
+        )
+        
+        return CategoryModel(
+            id="traces",
+            label="Traces",
+            icon="🔍",
+            status="ok",
+            links=[
+                LinkModel(
+                    label="Tempo Traces",
+                    url=url,
+                )
+            ],
+        )
+    
+    def _generate_vault_category(self, external_secrets: List[dict]) -> CategoryModel:
+        """Generate Vault secrets links."""
+        if not external_secrets:
+            return CategoryModel(
+                id="vault",
+                label="Vault Secrets",
+                icon="🔐",
+                status="empty",
+                message="No ExternalSecrets configured for this application",
+                links=[],
+            )
+        
+        links = []
+        for secret in external_secrets:
+            spec = secret.get("spec", {})
+            data_from = spec.get("dataFrom", [])
+            
+            for data_source in data_from:
+                extract = data_source.get("extract", {})
+                key = extract.get("key", "")
+                
+                if key:
+                    # Extract path from key (e.g., "secret/postgres-details" -> "postgres-details")
+                    path_parts = key.split("/", 1)
+                    if len(path_parts) == 2:
+                        secret_path = path_parts[1]
+                        url = f"{self.vault_base_url}/ui/vault/secrets/secret/show/{secret_path}"
+                        
+                        links.append(
+                            LinkModel(
+                                label=secret_path,
+                                url=url,
+                            )
+                        )
+        
+        if not links:
+            return CategoryModel(
+                id="vault",
+                label="Vault Secrets",
+                icon="🔐",
+                status="empty",
+                message="No secret paths found in ExternalSecrets",
+                links=[],
+            )
+        
+        return CategoryModel(
+            id="vault",
+            label="Vault Secrets",
+            icon="🔐",
+            status="ok",
+            links=links,
+        )
+    
+    def _generate_iaac_category(self, argocd_app: dict) -> CategoryModel:
+        """Generate IaaC (Infrastructure as Code) links."""
+        if not argocd_app:
+            return CategoryModel(
+                id="iaac",
+                label="IaaC",
+                icon="⚙️",
+                status="error",
+                message="ArgoCD application not found",
+                links=[],
+            )
+        
+        repo_url, app_path = K8sClient.parse_github_repo_from_argocd_app(argocd_app)
+        
+        if not repo_url or not app_path:
+            return CategoryModel(
+                id="iaac",
+                label="IaaC",
+                icon="⚙️",
+                status="error",
+                message="Unable to parse deployment configuration from ArgoCD manifest",
+                links=[],
+            )
+        
+        # Get target revision (branch)
+        spec = argocd_app.get("spec", {})
+        sources = spec.get("sources", [])
+        branch = "main"  # default
+        
+        for source in sources:
+            if source.get("ref") == "values":
+                branch = source.get("targetRevision", "main")
+                break
+        
+        # Construct GitHub URL
+        github_url = f"{repo_url}/tree/{branch}/{app_path}"
+        
+        return CategoryModel(
+            id="iaac",
+            label="IaaC",
+            icon="⚙️",
+            status="ok",
+            links=[
+                LinkModel(
+                    label="Deployment Configuration",
+                    url=github_url,
+                )
+            ],
+        )
