@@ -2,7 +2,32 @@
 
 All notable changes to this project will be documented in this file.
 
-## [Unreleased] - 2025-12-14
+## [2.0.0] - 2025-12-14
+
+### Added
+- **Mock/Test Endpoints**: New endpoints for extension development without K8s resources
+  - `GET /api/v1/mock/applications/{app_name}/links` - Mock response with all categories (happy path)
+  - `GET /api/v1/fixtures/{fixture_name}` - Test fixtures for different UI states
+  - Available fixtures: `all-ok`, `error-states`, `partial-data`, `minimal`
+- **Fixtures Module** (`app/fixtures.py`): Reusable test data for extension developers
+  - 4 fixture types covering happy path, error handling, partial data, and minimal states
+  - Customizable app_name and namespace parameters
+
+### Changed
+- **BREAKING**: Upgraded Python from 3.11 to 3.13
+- **BREAKING**: Updated all dependencies to latest stable versions:
+  - fastapi: 0.115.0 → 0.115.6
+  - uvicorn: 0.32.0 → 0.34.0
+  - kubernetes: 31.0.0 → 32.0.0
+  - pydantic: 2.10.0 → 2.10.5
+  - pydantic-settings: 2.6.0 → 2.7.0
+  - valkey: 6.0.2 (unchanged)
+  - structlog: 24.4.0 (unchanged)
+- **Docker Base Image**: Updated from `python:3.11-slim` to `python:3.13-slim`
+- **Tempo Datasource UID**: Updated from `P8E80F9AEF21F6940` to `de7lydl3hl9fkd`
+- **Tempo Time Range**: Changed from 15 minutes to 1 hour (`now-1h` to `now`)
+
+## [1.0.0] - 2025-12-13
 
 ### Fixed
 - **Loki URL Format**: Updated to use the new Grafana Loki Explore App path

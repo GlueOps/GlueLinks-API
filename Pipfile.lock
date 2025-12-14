@@ -1,11 +1,11 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "117190406d708cbbfb6c9400bac363c1c2e4f51413856e209a71aedd7fac059c"
+            "sha256": "b424e18901bf8758fcfd4fa2d62f1a49f0db551793d3db5cb84d9b69920d29a9"
         },
         "pipfile-spec": 6,
         "requires": {
-            "python_version": "3.11"
+            "python_version": "3.13"
         },
         "sources": [
             {
@@ -274,12 +274,12 @@
         },
         "kubernetes": {
             "hashes": [
-                "sha256:28945de906c8c259c1ebe62703b56a03b714049372196f854105afe4e6d014c0",
-                "sha256:bf141e2d380c8520eada8b351f4e319ffee9636328c137aa432bc486ca1200e1"
+                "sha256:35282ab8493b938b08ab5526c7ce66588232df00ef5e1dbe88a419107dc10998",
+                "sha256:42f43d49abd437ada79a79a16bd48a604d3471a117a8347e87db693f2ba0ba28"
             ],
             "index": "pypi",
             "markers": "python_version >= '3.6'",
-            "version": "==31.0.0"
+            "version": "==32.0.1"
         },
         "oauthlib": {
             "hashes": [
@@ -422,12 +422,12 @@
         },
         "pydantic-settings": {
             "hashes": [
-                "sha256:7fb0637c786a558d3103436278a7c4f1cfd29ba8973238a50c5bb9a55387da87",
-                "sha256:e0f92546d8a9923cb8941689abf85d6601a8c19a23e97a34b2964a2e3f813ca0"
+                "sha256:10c9caad35e64bfb3c2fbf70a078c0e25cc92499782e5200747f942a065dec93",
+                "sha256:590be9e6e24d06db33a4262829edef682500ef008565a969c73d39d5f8bfb3fd"
             ],
             "index": "pypi",
             "markers": "python_version >= '3.8'",
-            "version": "==2.6.1"
+            "version": "==2.7.1"
         },
         "python-dateutil": {
             "hashes": [
@@ -594,11 +594,11 @@
                 "standard"
             ],
             "hashes": [
-                "sha256:82ad92fd58da0d12af7482ecdb5f2470a04c9c9a53ced65b9bbb4a205377602e",
-                "sha256:ee9519c246a72b1c084cea8d3b44ed6026e78a4a309cbedae9c37e4cb9fbb175"
+                "sha256:16246631db62bdfbf069b0645177d6e8a77ba950cfedbfd093acef9444e4d885",
+                "sha256:35919a9a979d7a59334b6b10e05d77c1d0d574c50e0fc98b8b1a0f165708b55a"
             ],
-            "markers": "python_version >= '3.8'",
-            "version": "==0.32.1"
+            "markers": "python_version >= '3.9'",
+            "version": "==0.34.3"
         },
         "uvloop": {
             "hashes": [

@@ -11,6 +11,7 @@ from app.models import HealthResponse, ReadyResponse, LinksResponse
 from app.cache import CacheManager
 from app.k8s_client import K8sClient
 from app.links_generator import LinksGenerator
+from app.fixtures import get_fixture, FIXTURES
 
 # Load settings and configure logging
 settings = load_settings()
@@ -48,7 +49,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title="GlueLinks API",
     description="Backend API for ArgoCD GlueOps Extension",
-    version="1.0.0",
+    version="2.0.0",
     lifespan=lifespan,
 )
 
@@ -161,6 +162,46 @@ async def get_application_links(
             status_code=500,
             detail="Failed to generate links. Check logs for details.",
         )
+
+
+@app.get("/api/v1/mock/applications/{app_name}/links", tags=["Mock"])
+async def get_mock_application_links(app_name: str):
+    """
+    Get mock links for an application (all-ok scenario).
+    Use this endpoint to test the ArgoCD extension UI without requiring K8s resources.
+    
+    - **app_name**: Application name to use in the mock response
+    
+    No authentication or headers required.
+    """
+    logger.info("mock_request", app_name=app_name, fixture="all-ok")
+    return get_fixture("all-ok", app_name=app_name)
+
+
+@app.get("/api/v1/fixtures/{fixture_name}", tags=["Mock"])
+async def get_fixture_data(fixture_name: str):
+    """
+    Get a specific test fixture by name.
+    Use these endpoints to test different UI states in the extension.
+    
+    Available fixtures:
+    - **all-ok**: All categories populated with working links (happy path)
+    - **error-states**: Various error and empty states for testing error handling
+    - **partial-data**: Mix of working and empty/error categories
+    - **minimal**: Only namespace and IaaC links, everything else empty
+    
+    Returns mock data with default app_name and namespace.
+    """
+    logger.info("fixture_request", fixture_name=fixture_name)
+    
+    if fixture_name not in FIXTURES:
+        available = ", ".join(FIXTURES.keys())
+        raise HTTPException(
+            status_code=404,
+            detail=f"Fixture '{fixture_name}' not found. Available fixtures: {available}"
+        )
+    
+    return get_fixture(fixture_name)
 
 
 @app.exception_handler(Exception)
