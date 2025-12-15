@@ -32,6 +32,13 @@ class Settings(BaseSettings):
     # UI configuration
     max_rows: int = Field(default=4, description="Maximum number of rows to display per category")
     
+    # Mock/demo mode configuration
+    use_mock_data: bool = Field(default=False, description="Use mock data instead of real K8s queries")
+    default_mock_fixture: str = Field(
+        default="all-ok",
+        description="Default fixture for mock responses (all-ok, error-states, partial-data, minimal)"
+    )
+    
     # Logging
     log_level: str = Field(default="INFO", description="Log level")
     

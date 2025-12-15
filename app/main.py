@@ -111,6 +111,11 @@ async def get_application_links(
     log = logger.bind(app_name=app_name, header=argocd_application_name)
     log.info("request_received")
     
+    # Check if mock mode is enabled
+    if settings.use_mock_data:
+        log.info("using_mock_data", fixture=settings.default_mock_fixture)
+        return get_fixture(settings.default_mock_fixture, app_name=app_name)
+    
     # Parse header
     try:
         namespace, header_app_name = argocd_application_name.split(":", 1)
@@ -169,15 +174,16 @@ async def get_application_links(
 @app.get("/api/v1/mock/applications/{app_name}/links", tags=["Mock"])
 async def get_mock_application_links(app_name: str):
     """
-    Get mock links for an application (all-ok scenario).
-    Use this endpoint to test the ArgoCD extension UI without requiring K8s resources.
+    Get mock links for an application.
+    Uses the DEFAULT_MOCK_FIXTURE environment variable (defaults to 'all-ok').
     
     - **app_name**: Application name to use in the mock response
     
     No authentication or headers required.
     """
-    logger.info("mock_request", app_name=app_name, fixture="all-ok")
-    return get_fixture("all-ok", app_name=app_name)
+    fixture_name = settings.default_mock_fixture
+    logger.info("mock_request", app_name=app_name, fixture=fixture_name)
+    return get_fixture(fixture_name, app_name=app_name)
 
 
 @app.get("/api/v1/fixtures/{fixture_name}", tags=["Mock"])
