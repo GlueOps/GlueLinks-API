@@ -120,6 +120,11 @@ class K8sClient:
     
     def get_first_pod(self, deployment_name: str, namespace: str) -> Optional[client.V1Pod]:
         """Get first pod from a deployment."""
+        pods = self.get_pods(deployment_name, namespace)
+        return pods[0] if pods else None
+    
+    def get_pods(self, deployment_name: str, namespace: str) -> List[client.V1Pod]:
+        """Get all pods from a deployment."""
         try:
             pods = self.core_v1.list_namespaced_pod(
                 namespace=namespace,
@@ -127,16 +132,15 @@ class K8sClient:
             )
             
             if pods.items:
-                pod = pods.items[0]
-                logger.debug("pod_found", name=pod.metadata.name, namespace=namespace)
-                return pod
+                logger.debug("pods_found", count=len(pods.items), deployment=deployment_name, namespace=namespace)
+                return pods.items
             
             logger.warning("no_pods_found", deployment=deployment_name, namespace=namespace)
-            return None
+            return []
             
         except ApiException as e:
             logger.error("pod_fetch_failed", deployment=deployment_name, namespace=namespace, error=str(e))
-            return None
+            return []
     
     def get_external_secrets(self, app_name: str, namespace: str) -> List[dict]:
         """Get ExternalSecret resources by tracking ID annotation."""

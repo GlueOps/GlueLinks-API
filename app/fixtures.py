@@ -442,12 +442,200 @@ def get_mock_minimal(app_name: str = "minimal-app", namespace: str = "default") 
     }
 
 
+def get_mock_multi_links(app_name: str = "multi-service-app", namespace: str = "production") -> Dict[str, Any]:
+    """
+    Mock response with multiple links in ALL categories.
+    Use this to test rendering when every category has multiple links.
+    """
+    now = datetime.utcnow().isoformat() + "Z"
+    return {
+        "app_name": app_name,
+        "namespace": namespace,
+        "service_name": app_name,
+        "categories": [
+            get_quick_links_dict(DEFAULT_CAPTAIN_DOMAIN),
+            {
+                "id": "apm",
+                "label": "APM Overview",
+                "icon": "📊",
+                "status": "ok",
+                "message": None,
+                "links": [
+                    {
+                        "label": f"{app_name}-api",
+                        "url": f"https://grafana.nonprod.example.com/d/opentelemetry-apm/apm-overview?orgId=1&refresh=30s&from=now-1h&to=now&var-app={app_name}-api&var-route=All"
+                    },
+                    {
+                        "label": f"{app_name}-worker",
+                        "url": f"https://grafana.nonprod.example.com/d/opentelemetry-apm/apm-overview?orgId=1&refresh=30s&from=now-1h&to=now&var-app={app_name}-worker&var-route=All"
+                    },
+                    {
+                        "label": f"{app_name}-scheduler",
+                        "url": f"https://grafana.nonprod.example.com/d/opentelemetry-apm/apm-overview?orgId=1&refresh=30s&from=now-1h&to=now&var-app={app_name}-scheduler&var-route=All"
+                    }
+                ]
+            },
+            {
+                "id": "namespace",
+                "label": "Kubernetes Overview",
+                "icon": "📦",
+                "status": "ok",
+                "message": None,
+                "links": [
+                    {
+                        "label": namespace,
+                        "url": f"https://grafana.nonprod.example.com/d/ee58kcteeir5sf/kubernetes-overview?orgId=1&var-namespace={namespace}"
+                    },
+                    {
+                        "label": f"{namespace}-jobs",
+                        "url": f"https://grafana.nonprod.example.com/d/ee58kcteeir5sf/kubernetes-overview?orgId=1&var-namespace={namespace}-jobs"
+                    },
+                    {
+                        "label": f"{namespace}-cron",
+                        "url": f"https://grafana.nonprod.example.com/d/ee58kcteeir5sf/kubernetes-overview?orgId=1&var-namespace={namespace}-cron"
+                    }
+                ]
+            },
+            {
+                "id": "pod",
+                "label": "Pod Metrics",
+                "icon": "🔲",
+                "status": "ok",
+                "message": None,
+                "links": [
+                    {
+                        "label": f"{app_name}-abc123-pod1",
+                        "url": f"https://grafana.nonprod.example.com/d/ce60j8f8umhhcc/kubernetes-pod-overview?orgId=1&refresh=10s&from=now-1h&to=now&var-datasource=default&var-cluster=&var-namespace={namespace}&var-pod={app_name}-abc123-pod1"
+                    },
+                    {
+                        "label": f"{app_name}-abc123-pod2",
+                        "url": f"https://grafana.nonprod.example.com/d/ce60j8f8umhhcc/kubernetes-pod-overview?orgId=1&refresh=10s&from=now-1h&to=now&var-datasource=default&var-cluster=&var-namespace={namespace}&var-pod={app_name}-abc123-pod2"
+                    },
+                    {
+                        "label": f"{app_name}-abc123-pod3",
+                        "url": f"https://grafana.nonprod.example.com/d/ce60j8f8umhhcc/kubernetes-pod-overview?orgId=1&refresh=10s&from=now-1h&to=now&var-datasource=default&var-cluster=&var-namespace={namespace}&var-pod={app_name}-abc123-pod3"
+                    },
+                    {
+                        "label": f"{app_name}-def456-pod1",
+                        "url": f"https://grafana.nonprod.example.com/d/ce60j8f8umhhcc/kubernetes-pod-overview?orgId=1&refresh=10s&from=now-1h&to=now&var-datasource=default&var-cluster=&var-namespace={namespace}&var-pod={app_name}-def456-pod1"
+                    },
+                    {
+                        "label": f"{app_name}-def456-pod2",
+                        "url": f"https://grafana.nonprod.example.com/d/ce60j8f8umhhcc/kubernetes-pod-overview?orgId=1&refresh=10s&from=now-1h&to=now&var-datasource=default&var-cluster=&var-namespace={namespace}&var-pod={app_name}-def456-pod2"
+                    }
+                ]
+            },
+            {
+                "id": "logs",
+                "label": "Logs",
+                "icon": "📋",
+                "status": "ok",
+                "message": None,
+                "links": [
+                    {
+                        "label": f"{app_name}-api",
+                        "url": f"https://grafana.nonprod.example.com/a/grafana-lokiexplore-app/explore/service/{app_name}-api/logs?patterns=%5B%5D&from=now-15m&to=now&var-filters=service_name%7C%3D%7C{app_name}-api"
+                    },
+                    {
+                        "label": f"{app_name}-worker",
+                        "url": f"https://grafana.nonprod.example.com/a/grafana-lokiexplore-app/explore/service/{app_name}-worker/logs?patterns=%5B%5D&from=now-15m&to=now&var-filters=service_name%7C%3D%7C{app_name}-worker"
+                    },
+                    {
+                        "label": f"{app_name}-scheduler",
+                        "url": f"https://grafana.nonprod.example.com/a/grafana-lokiexplore-app/explore/service/{app_name}-scheduler/logs?patterns=%5B%5D&from=now-15m&to=now&var-filters=service_name%7C%3D%7C{app_name}-scheduler"
+                    }
+                ]
+            },
+            {
+                "id": "traces",
+                "label": "Traces",
+                "icon": "🔍",
+                "status": "ok",
+                "message": None,
+                "links": [
+                    {
+                        "label": f"{app_name}-api",
+                        "url": f"https://grafana.nonprod.example.com/explore?schemaVersion=1&panes=%7B%22trc%22%3A%7B%22queries%22%3A%5B%7B%22refId%22%3A%22A%22%2C%22queryType%22%3A%22traceqlSearch%22%2C%22filters%22%3A%5B%7B%22id%22%3A%22service-name%22%2C%22value%22%3A%5B%22{app_name}-api%22%5D%7D%5D%7D%5D%7D%7D&orgId=1"
+                    },
+                    {
+                        "label": f"{app_name}-worker",
+                        "url": f"https://grafana.nonprod.example.com/explore?schemaVersion=1&panes=%7B%22trc%22%3A%7B%22queries%22%3A%5B%7B%22refId%22%3A%22A%22%2C%22queryType%22%3A%22traceqlSearch%22%2C%22filters%22%3A%5B%7B%22id%22%3A%22service-name%22%2C%22value%22%3A%5B%22{app_name}-worker%22%5D%7D%5D%7D%5D%7D%7D&orgId=1"
+                    },
+                    {
+                        "label": f"{app_name}-scheduler",
+                        "url": f"https://grafana.nonprod.example.com/explore?schemaVersion=1&panes=%7B%22trc%22%3A%7B%22queries%22%3A%5B%7B%22refId%22%3A%22A%22%2C%22queryType%22%3A%22traceqlSearch%22%2C%22filters%22%3A%5B%7B%22id%22%3A%22service-name%22%2C%22value%22%3A%5B%22{app_name}-scheduler%22%5D%7D%5D%7D%5D%7D%7D&orgId=1"
+                    }
+                ]
+            },
+            {
+                "id": "vault",
+                "label": "Vault Secrets",
+                "icon": "🔐",
+                "status": "ok",
+                "message": None,
+                "links": [
+                    {
+                        "label": "database-credentials",
+                        "url": "https://vault.nonprod.example.com/ui/vault/secrets/secret/show/database-credentials"
+                    },
+                    {
+                        "label": "api-keys",
+                        "url": "https://vault.nonprod.example.com/ui/vault/secrets/secret/show/api-keys"
+                    },
+                    {
+                        "label": "oauth-secrets",
+                        "url": "https://vault.nonprod.example.com/ui/vault/secrets/secret/show/oauth-secrets"
+                    },
+                    {
+                        "label": "tls-certificates",
+                        "url": "https://vault.nonprod.example.com/ui/vault/secrets/secret/show/tls-certificates"
+                    }
+                ]
+            },
+            {
+                "id": "iaac",
+                "label": "IaaC",
+                "icon": "⚙️",
+                "status": "ok",
+                "message": None,
+                "links": [
+                    {
+                        "label": "API Deployment Config",
+                        "url": f"https://github.com/example/deployment-configurations/tree/main/apps/{app_name}/api"
+                    },
+                    {
+                        "label": "Worker Deployment Config",
+                        "url": f"https://github.com/example/deployment-configurations/tree/main/apps/{app_name}/worker"
+                    },
+                    {
+                        "label": "Scheduler Deployment Config",
+                        "url": f"https://github.com/example/deployment-configurations/tree/main/apps/{app_name}/scheduler"
+                    }
+                ]
+            }
+        ],
+        "metadata": {
+            "generated_at": now,
+            "last_updated": now,
+            "max_rows": DEFAULT_MAX_ROWS,
+            "version": "v1",
+            "resources": {
+                "argocd_app": True,
+                "deployment": True,
+                "pods_found": 5,
+                "external_secrets_found": 4
+            }
+        }
+    }
+
+
 # Map fixture names to their generator functions
 FIXTURES = {
     "all-ok": get_mock_all_ok,
     "error-states": get_mock_error_states,
     "partial-data": get_mock_partial_data,
     "minimal": get_mock_minimal,
+    "multi-links": get_mock_multi_links,
 }
 
 

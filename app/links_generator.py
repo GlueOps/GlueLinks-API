@@ -36,15 +36,25 @@ class LinksGenerator:
         # Use full app_name as service_name for OpenTelemetry queries
         service_name = app_name
         
-        # Fetch K8s resources
+        # Fetch ArgoCD application first (lives in argocd namespace like glueops-core)
         argocd_app = self.k8s_client.get_argocd_application(app_name, namespace)
-        deployment = self.k8s_client.get_deployment(app_name, namespace)
         
-        first_pod = None
+        # Extract the target deployment namespace from ArgoCD app spec
+        # The ArgoCD app lives in 'glueops-core', but deploys to 'nonprod' or similar
+        target_namespace = namespace
+        if argocd_app:
+            target_namespace = argocd_app.get("spec", {}).get("destination", {}).get("namespace", namespace)
+            if target_namespace != namespace:
+                log.debug("using_target_namespace", argocd_namespace=namespace, target_namespace=target_namespace)
+        
+        # Fetch K8s resources from the TARGET namespace (where deployments/pods actually live)
+        deployment = self.k8s_client.get_deployment(app_name, target_namespace)
+        
+        pods = []
         if deployment:
-            first_pod = self.k8s_client.get_first_pod(deployment.metadata.name, namespace)
+            pods = self.k8s_client.get_pods(deployment.metadata.name, target_namespace)
         
-        external_secrets = self.k8s_client.get_external_secrets(app_name, namespace)
+        external_secrets = self.k8s_client.get_external_secrets(app_name, target_namespace)
         
         # Build metadata
         now = datetime.now(timezone.utc)
@@ -56,17 +66,18 @@ class LinksGenerator:
             resources=ResourceMetadata(
                 argocd_app=argocd_app is not None,
                 deployment=deployment is not None,
-                pods_found=1 if first_pod else 0,
+                pods_found=len(pods),
                 external_secrets_found=len(external_secrets),
             ),
         )
         
         # Generate categories with Quick Links first
+        # Use target_namespace for categories that show deployment details
         categories = [
             generate_quick_links_category(self.captain_domain),
             self._generate_apm_category(service_name),
-            self._generate_namespace_category(namespace),
-            self._generate_pod_category(first_pod, namespace),
+            self._generate_namespace_category(target_namespace),
+            self._generate_pod_category(pods, target_namespace),
             self._generate_logs_category(service_name),
             self._generate_traces_category(service_name),
             self._generate_vault_category(external_secrets),
@@ -77,7 +88,7 @@ class LinksGenerator:
         
         return LinksResponse(
             app_name=app_name,
-            namespace=namespace,
+            namespace=target_namespace,
             service_name=service_name,
             categories=categories,
             metadata=metadata,
@@ -97,14 +108,14 @@ class LinksGenerator:
             status="ok",
             links=[
                 LinkModel(
-                    label="Application Performance Monitoring",
+                    label=service_name,
                     url=url,
                 )
             ],
         )
     
     def _generate_namespace_category(self, namespace: str) -> CategoryModel:
-        """Generate namespace overview links."""
+        """Generate Kubernetes overview links."""
         url = (
             f"{self.grafana_base_url}/d/ee58kcteeir5sf/kubernetes-overview"
             f"?orgId=1&var-namespace={quote(namespace)}"
@@ -112,48 +123,46 @@ class LinksGenerator:
         
         return CategoryModel(
             id="namespace",
-            label="Namespace Overview",
+            label="Kubernetes Overview",
             icon="📦",
             status="ok",
             links=[
                 LinkModel(
-                    label="Kubernetes Overview",
+                    label=namespace,
                     url=url,
                 )
             ],
         )
     
-    def _generate_pod_category(self, pod, namespace: str) -> CategoryModel:
-        """Generate pod overview links."""
-        if not pod:
+    def _generate_pod_category(self, pods: list, namespace: str) -> CategoryModel:
+        """Generate pod metrics links for all pods."""
+        if not pods:
             return CategoryModel(
                 id="pod",
-                label="Pod Overview",
+                label="Pod Metrics",
                 icon="🔲",
                 status="empty",
                 message="No pods currently running",
                 links=[],
             )
         
-        pod_name = pod.metadata.name
-        url = (
-            f"{self.grafana_base_url}/d/ce60j8f8umhhcc/kubernetes-pod-overview"
-            f"?orgId=1&refresh=10s&from=now-1h&to=now"
-            f"&var-datasource=default&var-cluster=&var-namespace={quote(namespace)}"
-            f"&var-pod={quote(pod_name)}"
-        )
+        links = []
+        for pod in pods:
+            pod_name = pod.metadata.name
+            url = (
+                f"{self.grafana_base_url}/d/ce60j8f8umhhcc/kubernetes-pod-overview"
+                f"?orgId=1&refresh=10s&from=now-1h&to=now"
+                f"&var-datasource=default&var-cluster=&var-namespace={quote(namespace)}"
+                f"&var-pod={quote(pod_name)}"
+            )
+            links.append(LinkModel(label=pod_name, url=url))
         
         return CategoryModel(
             id="pod",
-            label="Pod Overview",
+            label="Pod Metrics",
             icon="🔲",
             status="ok",
-            links=[
-                LinkModel(
-                    label=pod_name,
-                    url=url,
-                )
-            ],
+            links=links,
         )
     
     def _generate_logs_category(self, service_name: str) -> CategoryModel:
@@ -175,7 +184,7 @@ class LinksGenerator:
             status="ok",
             links=[
                 LinkModel(
-                    label="Application Logs (Loki)",
+                    label=service_name,
                     url=url,
                 )
             ],
@@ -235,7 +244,7 @@ class LinksGenerator:
             status="ok",
             links=[
                 LinkModel(
-                    label="Tempo Traces",
+                    label=service_name,
                     url=url,
                 )
             ],

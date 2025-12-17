@@ -25,19 +25,19 @@ def generate_quick_links_category(captain_domain: str) -> CategoryModel:
         status="ok",
         links=[
             LinkModel(
-                label="Cluster Info",
+                label="ℹ️ Cluster Info",
                 url=f"https://cluster-info.{captain_domain}",
             ),
             LinkModel(
-                label="GlueOps Documentation",
+                label="📚 GlueOps Docs",
                 url="https://docs.glueops.dev",
             ),
             LinkModel(
-                label="Call GlueOps Support",
-                url="tel:18774583677",
+                label="📞 +1-877-GLUEOPS",
+                url="tel:+18774583677",
             ),
             LinkModel(
-                label="Email GlueOps Support",
+                label="📧 support@glueops.dev",
                 url="mailto:support@glueops.dev",
             ),
         ],
