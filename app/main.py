@@ -27,8 +27,12 @@ async def lifespan(app: FastAPI):
     # Initialize cache
     app.state.cache = CacheManager(settings.valkey_url, settings.cache_ttl_seconds)
     
-    # Initialize K8s client
-    app.state.k8s_client = K8sClient()
+    # Initialize K8s client (skip in mock mode)
+    if settings.use_mock_data:
+        logger.info("mock_mode_enabled", message="Skipping K8s client initialization")
+        app.state.k8s_client = None
+    else:
+        app.state.k8s_client = K8sClient()
     
     # Initialize links generator
     app.state.links_generator = LinksGenerator(
