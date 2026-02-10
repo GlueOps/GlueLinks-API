@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   gluelinks-test:
-    image: ghcr.io/glueops/gluelinks-api:latest
+    image: ghcr.io/glueops/gluelinks-api:latest@sha256:d759cd2ef7dd50a2f9e89e39de11ec98538ef3cc0ddeecefbc1c5771e638adb5
     ports:
       - "8001:8000"
     volumes:
