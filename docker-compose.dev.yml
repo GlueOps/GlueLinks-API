@@ -1,6 +1,6 @@
 services:
   valkey:
-    image: valkey/valkey:latest
+    image: valkey/valkey:latest@sha256:2bce660b767cb62c8c0ea020e94a230093be63dbd6af4f21b044960517a5842d
     container_name: gluelinks-valkey
     ports:
       - "6379:6379"
