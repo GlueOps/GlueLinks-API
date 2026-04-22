@@ -87,7 +87,7 @@ spec:
     spec:
       containers:
         - name: valkey
-          image: valkey/valkey:latest
+          image: valkey/valkey:latest@sha256:3b55fbaa0cd93cf0d9d961f405e4dfcc70efe325e2d84da207a0a8e6d8fde4f9
           ports:
             - containerPort: 6379
               name: valkey
